@@ -1,0 +1,131 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+<script src="~/Scripts/script.js"></script>
+
+
+<main>
+    <input type="hidden" id="hid_mark" name="hid_mark">
+    <input type="hidden" id="former_text" name="former_text">
+
+    <div class="row">
+        <div class="custom-dropdown" style="position: relative;">
+            <label id="input_label" name="input_label"></label>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="custom-dropdown" style="position: relative;">
+            <input id="input_box" name="input_box" type="number">
+        </div>
+    </div>
+
+    <script>
+        var inputBox = $('#input_box');
+        var input_label = $('#input_label');
+
+        inputBox.on('input', function () {
+            input_label.text(inputBox.val());
+        });
+
+    </script>
+
+    <br />
+    <div class="row" style="margin-bottom:5px;">
+        <div class="custom-dropdown" style="position: relative;">
+            <button type="button" id="btn_AC" class="btn btn-dark" onclick="apply('AC');">AC</button>
+            <button type="button" id="btn_C" class="btn btn-dark" onclick="apply('C');">C</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="custom-dropdown" style="position: relative;">
+            <button type="button" id="btn_add" class="btn btn-dark" onclick="apply('+');">＋</button>
+            <button type="button" id="btn_minus" class="btn btn-dark" onclick="apply('-');">－</button>
+            <button type="button" id="btn_multiplied" class="btn btn-dark" onclick="apply('*');">＊</button>
+            <button type="button" id="btn_divided" class="btn btn-dark" onclick="apply('/');">／</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top:5px;">
+        <div class="custom-dropdown" style="position: relative;">
+            <button type="button" id="btn_equal" class="btn btn-dark" onclick="apply('=');">＝</button>
+        </div>
+    </div>
+
+</main>
+
+<script>
+
+    $(document).ready(function () {
+        var totalWidth = 0;
+        var halfWidth = 0;
+
+        totalWidth = $('#btn_add').outerWidth() + $('#btn_minus').outerWidth() + $('#btn_multiplied').outerWidth() + $('#btn_divided').outerWidth() - parseInt($('#btn_add').css('padding-right'), 10);
+
+        $('#btn_AC').width(totalWidth / 2 - parseInt($('#btn_add').css('padding-right'), 10) - parseInt($('#btn_add').css('padding-right'), 10) / 3);
+        $('#btn_C').width(totalWidth / 2 - parseInt($('#btn_add').css('padding-right'), 10) - parseInt($('#btn_add').css('padding-right'), 10) / 3);
+
+        $('#btn_equal').width(totalWidth);
+
+        $('#input_label').text('0');
+        $('#former_text').val('0');
+    });
+
+    function apply(button) {
+
+        if (button == "=" && $('#hid_mark').val() == "=") {
+            alert("請點選計算符號");
+        }
+        else {
+            if (button == "C") {
+                $('#input_box').val('');
+                $('#input_label').text($('#former_text').val());
+            }
+            else if (button == "AC") {
+                var input_label = $('#input_label');
+                var hid_text = $('#former_text');
+
+                $('#input_box').val('');
+                $('#input_label').text(0);
+                $('#hid_mark').val('');
+                $('#former_text').val(0);
+            }
+            else {
+                if ($('#input_box').val().trim() == "") {
+                    alert("請輸入數值");
+                }
+                else {
+                    var input_label = $('#input_label');
+                    var hid_text = $('#former_text');
+
+                    $.ajax({
+                        type: "Post",
+                        url: "/Home/ToCount",
+                        data: "{Mark:'" + button + "',former:'" + Number(hid_text.val()) + "',latter:'" + Number($('#input_box').val()) + "',last_btn:'" + $('#hid_mark').val() + "'}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.success) {
+                                input_label.text(data.answer);
+                                hid_text.val(data.answer);
+                                $('#input_box').val('');
+                                $('#hid_mark').val(button);
+                            }
+                            else {
+                                alert("錯誤");
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            alert("錯誤");
+                        }
+                    });
+                }
+
+            }
+        }
+
+    }
+</script>
